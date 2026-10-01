@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
@@ -21,11 +23,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -36,6 +40,9 @@ import dev.devinsondev.gallery.core.media.MediaSafetyPolicy
 import dev.devinsondev.gallery.core.media.ThumbnailLoader
 import dev.devinsondev.gallery.feature.gallery.domain.GalleryMedia
 import dev.devinsondev.gallery.feature.gallery.domain.MediaKind
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @Composable
 fun MediaGrid(
@@ -44,21 +51,60 @@ fun MediaGrid(
     onOpen: (GalleryMedia) -> Unit,
     contentPadding: PaddingValues,
 ) {
+    val zoneId = remember { ZoneId.systemDefault() }
+    val sections = remember(items, zoneId) {
+        splitMediaByDate(items, zoneId)
+    }
+    val locale = LocalConfiguration.current.locales[0]
+    val dateFormatter = remember(locale) {
+        DateTimeFormatter
+            .ofLocalizedDate(FormatStyle.LONG)
+            .withLocale(locale)
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 108.dp),
         contentPadding = contentPadding,
     ) {
-        items(
-            items = items,
-            key = GalleryMedia::uri,
-        ) { media ->
-            MediaTile(
-                media = media,
-                thumbnailLoader = thumbnailLoader,
-                onClick = { onOpen(media) },
-            )
+        sections.forEach { section ->
+            item(
+                key = "date:${section.date}",
+                span = { GridItemSpan(maxLineSpan) },
+            ) {
+                MediaDateHeader(
+                    text = dateFormatter.format(section.date),
+                )
+            }
+
+            items(
+                items = section.items,
+                key = GalleryMedia::uri,
+            ) { media ->
+                MediaTile(
+                    media = media,
+                    thumbnailLoader = thumbnailLoader,
+                    onClick = { onOpen(media) },
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun MediaDateHeader(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = 8.dp,
+            ),
+    )
 }
 
 @Composable
