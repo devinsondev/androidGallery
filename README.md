@@ -27,7 +27,7 @@
 
 ## Сборка
 
-JDK 17, compileSdk 37, targetSdk 36 (Android 16), minSdk 29.
+JDK 17, compileSdk 36, targetSdk 36 (Android 16), minSdk 29.
 
 ```bash
 gradle :app:testDebugUnitTest
