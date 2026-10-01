@@ -115,7 +115,7 @@ class MediaStoreGalleryRepository(
             width = int(MediaStore.MediaColumns.WIDTH),
             height = int(MediaStore.MediaColumns.HEIGHT),
             dateMillis = dateTaken.takeIf { it > 0 } ?: dateAddedMillis,
-            durationMillis = durationColumn?.let(::long),
+            durationMillis = durationColumn?.let { long(it) },
         )
     }
 
