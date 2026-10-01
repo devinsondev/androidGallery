@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Галерея</string>
+    <string name="gallery_title">Галерея</string>
+    <string name="grant_access_title">Нужен доступ к фото и видео</string>
+    <string name="grant_access_body">Приложение читает только локальную медиатеку через Android MediaStore. Доступ к интернету не запрашивается.</string>
+    <string name="grant_access_action">Разрешить доступ</string>
+    <string name="limited_access">Показаны только выбранные фото и видео.</string>
+    <string name="choose_more">Изменить доступ</string>
+    <string name="empty_gallery">Доступных фото и видео пока нет.</string>
+    <string name="load_error">Не удалось прочитать медиатеку.</string>
+    <string name="retry">Повторить</string>
+    <string name="refresh">Обновить</string>
+    <string name="back">Назад</string>
+    <string name="blocked_media_title">Файл не открыт</string>
+    <string name="blocked_media_unsupported">Формат не входит в безопасный список.</string>
+    <string name="blocked_media_size">Файл слишком большой для безопасного просмотра.</string>
+    <string name="blocked_media_dimensions">Размер изображения или видео выглядит подозрительно большим.</string>
+    <string name="blocked_media_duration">Видео слишком длинное для безопасного просмотра.</string>
+    <string name="blocked_media_invalid_uri">Источник файла не является локальным MediaStore.</string>
+    <string name="viewer_error">Не удалось безопасно открыть файл.</string>
+    <string name="limited_access_description">Ограниченный доступ к медиатеке</string>
+    <string name="blocked_description">Файл заблокирован безопасным режимом</string>
+</resources>
