@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "dev.devinsondev.gallery"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.devinsondev.gallery"
