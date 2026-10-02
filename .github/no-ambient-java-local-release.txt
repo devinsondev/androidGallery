@@ -1,0 +1,1 @@
+Temporary CI trigger for local release helper with JAVA_HOME and Java PATH cleared.
