@@ -1,0 +1,1 @@
+Temporary CI trigger for final RGBA launcher icon verification.
