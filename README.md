@@ -13,7 +13,7 @@
 
 ## Безопасность
 
-Приложение намеренно не запрашивает разрешение INTERNET.
+Приложение не запрашивает `INTERNET` и запрещает cleartext-трафик.
 
 Перед декодированием проверяются MIME, размер файла, геометрия кадра и длительность.
 Неподдерживаемые или аномально большие файлы не передаются декодеру. URI принимаются
@@ -21,29 +21,35 @@
 
 Изображения и GIF декодируются системным ImageDecoder сразу в размер экрана, превью —
 через ContentResolver.loadThumbnail(). Видео проигрывается Media3/ExoPlayer через
-локальный content:// URI.
+локальный `content://` URI.
 
-Сборка также защищена Gradle Wrapper checksum и Gradle dependency verification metadata.
+Сборка защищена Gradle Wrapper checksum, проверкой SHA-256 самого wrapper JAR и
+Gradle dependency verification в strict-режиме.
 
-Это уменьшает поверхность атаки, но не гарантирует защиту от неизвестной уязвимости
-в системном медиастеке. Android и Google Play system updates должны быть актуальны.
+## READY FOR USER PULL
 
-## Сборка на рабочем Windows ПК
-
-Проект рассчитан на JDK 17, compileSdk 36, targetSdk 36 (Android 16), minSdk 29.
+Обычный workflow на рабочем Windows ПК:
 
 ```powershell
 cd D:\ORDERED_CODE\PHONE\APPS\androidGallery
-git pull
+git pull --ff-only
 .\build-debug.bat
 ```
 
-`build-debug.bat` использует `D:\TOOLS\andrstdio\jbr`, Android SDK из
-`%LOCALAPPDATA%\Android\Sdk`, проверяет наличие checksum у Gradle Wrapper,
-запускает unit-тесты и собирает debug APK.
+`build-debug.bat` fail-closed проверяет wrapper, точные Gradle URL/SHA-256,
+`gradle/verification-metadata.xml`, JDK и Android SDK. Затем запускает unit-тесты
+и собирает debug APK со строгой проверкой зависимостей.
 
-Ручной запуск через wrapper:
+APK после успешной сборки:
+
+```text
+app\build\outputs\apk\debug\app-debug.apk
+```
+
+Ручной эквивалент Gradle-команды:
 
 ```powershell
-.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug
+.\gradlew.bat --dependency-verification strict :app:testDebugUnitTest :app:assembleDebug
 ```
+
+Toolchain: JDK 17, compileSdk 36, targetSdk 36 (Android 16), minSdk 29.
