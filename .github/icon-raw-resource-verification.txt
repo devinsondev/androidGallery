@@ -1,0 +1,1 @@
+Temporary CI trigger for launcher bitmap packaged through res/raw.
