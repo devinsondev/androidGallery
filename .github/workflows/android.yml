@@ -75,6 +75,10 @@ jobs:
         if: runner.os == 'Linux'
         run: ./gradlew --dependency-verification strict :app:assembleDebug
 
+      - name: Assemble local release (Linux)
+        if: runner.os == 'Linux'
+        run: ./gradlew --dependency-verification strict :app:assembleLocalRelease
+
       - name: Prepare canonical Windows workstation paths
         if: runner.os == 'Windows'
         shell: pwsh
@@ -94,7 +98,7 @@ jobs:
           }
           New-Item -ItemType Junction -Path $sdk -Target $env:ANDROID_HOME | Out-Null
 
-      - name: Run canonical Windows build helper
+      - name: Run canonical Windows local release helper
         if: runner.os == 'Windows'
         shell: cmd
-        run: build-debug.bat
+        run: build-local-release.bat

@@ -53,3 +53,28 @@ app\build\outputs\apk\debug\app-debug.apk
 ```
 
 Toolchain: JDK 17, compileSdk 36, targetSdk 36 (Android 16), minSdk 29.
+
+
+## Оптимизированная локальная сборка для телефона
+
+Для проверки производительности без debug-overhead используется отдельный `localRelease`:
+он не debuggable, включает R8/minify и resource shrinking, но подписывается локальным
+debug-ключом, чтобы APK можно было ставить через ADB без отдельного release keystore.
+
+Собрать APK:
+
+```powershell
+.\build-local-release.bat
+```
+
+Собрать, установить на подключённый по ADB телефон и запустить:
+
+```powershell
+.\install-local-release.bat
+```
+
+APK:
+
+```text
+app\build\outputs\apk\localRelease\app-localRelease.apk
+```
