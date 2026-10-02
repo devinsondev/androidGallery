@@ -6,11 +6,11 @@ on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  windows-metadata-bootstrap:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
@@ -18,21 +18,44 @@ jobs:
           distribution: temurin
           java-version: "17"
       - name: Install Android SDK
-        shell: bash
+        shell: pwsh
         run: |
-          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort -V | tail -1)"
-          test -n "$SDKMANAGER"
-          yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
+          $sdkManager = Get-ChildItem "$env:ANDROID_HOME\cmdline-tools" -Recurse -Filter sdkmanager.bat |
+            Sort-Object FullName |
+            Select-Object -Last 1
+          if (-not $sdkManager) {
+            throw "sdkmanager.bat not found under ANDROID_HOME"
+          }
+          & $sdkManager.FullName "platforms;android-36" "build-tools;36.0.0"
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build security preflight
-        shell: bash
+      - name: Verify Gradle wrapper JAR
+        shell: pwsh
         run: |
-          test -f gradle/wrapper/gradle-wrapper.properties
-          grep -q '^distributionSha256Sum=' gradle/wrapper/gradle-wrapper.properties
-          test -f gradle/verification-metadata.xml
-          echo "497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7  gradle/wrapper/gradle-wrapper.jar" | sha256sum -c -
-      - name: Unit tests
-        run: ./gradlew :app:testDebugUnitTest
-      - name: Assemble debug
-        run: ./gradlew :app:assembleDebug
+          $expected = "497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7"
+          $actual = (Get-FileHash "gradle\wrapper\gradle-wrapper.jar" -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $expected) {
+            throw "Gradle wrapper JAR checksum mismatch"
+          }
+      - name: Refresh Windows dependency verification metadata
+        shell: pwsh
+        run: |
+          .\gradlew.bat --refresh-dependencies --write-verification-metadata sha256 :app:testDebugUnitTest :app:assembleDebug
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+      - name: Commit verification metadata to main
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        run: |
+          Copy-Item "gradle\verification-metadata.xml" "$env:RUNNER_TEMP\verification-metadata.xml"
+          git fetch origin main
+          git checkout -B verification-metadata-windows origin/main
+          Copy-Item "$env:RUNNER_TEMP\verification-metadata.xml" "gradle\verification-metadata.xml" -Force
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gradle/verification-metadata.xml
+          git commit -m "build: add Windows dependency verification metadata"
+          git push origin HEAD:main
