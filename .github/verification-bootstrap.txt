@@ -1,1 +1,2 @@
 One-time CI trigger for generating reviewed Gradle dependency verification metadata.
+Retry after enabling the bootstrap commit step.
