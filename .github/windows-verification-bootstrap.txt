@@ -1,1 +1,2 @@
 One-time trigger for Windows Gradle dependency verification metadata bootstrap.
+Final Linux + Windows strict CI verification.
