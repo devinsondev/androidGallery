@@ -1,2 +1,2 @@
 One-time CI trigger for generating reviewed Gradle dependency verification metadata.
-Final wrapper-only CI verification trigger.
+Refresh dependencies and regenerate metadata from clean resolution.
