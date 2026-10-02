@@ -95,6 +95,15 @@ jobs:
             throw "Gradle wrapper JAR checksum mismatch"
           }
 
+      - name: Verify local BAT property matching (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          set "EXPECTED_DISTRIBUTION_URL=https\://services.gradle.org/distributions/gradle-9.5.0-bin.zip"
+          set "EXPECTED_DISTRIBUTION_SHA256=553c78f50dafcd54d65b9a444649057857469edf836431389695608536d6b746"
+          findstr /L /X /C:"distributionUrl=%EXPECTED_DISTRIBUTION_URL%" gradle\wrapper\gradle-wrapper.properties
+          findstr /L /X /C:"distributionSha256Sum=%EXPECTED_DISTRIBUTION_SHA256%" gradle\wrapper\gradle-wrapper.properties
+
       - name: Unit tests (Linux)
         if: runner.os == 'Linux'
         run: ./gradlew --dependency-verification strict :app:testDebugUnitTest
