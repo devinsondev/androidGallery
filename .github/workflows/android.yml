@@ -98,7 +98,10 @@ jobs:
           }
           New-Item -ItemType Junction -Path $sdk -Target $env:ANDROID_HOME | Out-Null
 
-      - name: Run canonical Windows local release helper
+      - name: Run canonical Windows local release helper without ambient Java
         if: runner.os == 'Windows'
         shell: cmd
-        run: build-local-release.bat
+        run: |
+          set "JAVA_HOME="
+          set "PATH=%SystemRoot%\System32;%SystemRoot%"
+          call build-local-release.bat
