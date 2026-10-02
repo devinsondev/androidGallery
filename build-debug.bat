@@ -40,15 +40,34 @@ if not exist "%VERIFY_META%" (
     exit /b 1
 )
 
-findstr /L /X /C:"distributionUrl=%EXPECTED_DISTRIBUTION_URL%" "%WRAPPER_PROPS%" >nul
-if errorlevel 1 (
-    echo ERROR: Gradle distributionUrl does not match the trusted expected URL.
+set "ACTUAL_DISTRIBUTION_URL="
+set "ACTUAL_DISTRIBUTION_SHA256="
+for /f "usebackq tokens=1,* delims==" %%A in ("%WRAPPER_PROPS%") do (
+    if "%%A"=="distributionUrl" set "ACTUAL_DISTRIBUTION_URL=%%B"
+    if "%%A"=="distributionSha256Sum" set "ACTUAL_DISTRIBUTION_SHA256=%%B"
+)
+
+if not defined ACTUAL_DISTRIBUTION_URL (
+    echo ERROR: distributionUrl is missing from %WRAPPER_PROPS%.
     exit /b 1
 )
 
-findstr /L /X /C:"distributionSha256Sum=%EXPECTED_DISTRIBUTION_SHA256%" "%WRAPPER_PROPS%" >nul
-if errorlevel 1 (
+if not "%ACTUAL_DISTRIBUTION_URL%"=="%EXPECTED_DISTRIBUTION_URL%" (
+    echo ERROR: Gradle distributionUrl does not match the trusted expected URL.
+    echo Expected: %EXPECTED_DISTRIBUTION_URL%
+    echo Actual:   %ACTUAL_DISTRIBUTION_URL%
+    exit /b 1
+)
+
+if not defined ACTUAL_DISTRIBUTION_SHA256 (
+    echo ERROR: distributionSha256Sum is missing from %WRAPPER_PROPS%.
+    exit /b 1
+)
+
+if /I not "%ACTUAL_DISTRIBUTION_SHA256%"=="%EXPECTED_DISTRIBUTION_SHA256%" (
     echo ERROR: Gradle distributionSha256Sum does not match the trusted expected SHA-256.
+    echo Expected: %EXPECTED_DISTRIBUTION_SHA256%
+    echo Actual:   %ACTUAL_DISTRIBUTION_SHA256%
     exit /b 1
 )
 
