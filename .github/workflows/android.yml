@@ -6,7 +6,7 @@ on:
   pull_request:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -25,21 +25,14 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Verify Gradle wrapper JAR
-        run: echo "497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7  gradle/wrapper/gradle-wrapper.jar" | sha256sum -c -
-      - name: Generate dependency verification metadata
-        run: ./gradlew --write-verification-metadata sha256 :app:testDebugUnitTest :app:assembleDebug
-      - name: Commit verification metadata to main
-        if: github.event_name == 'pull_request'
+      - name: Build security preflight
         shell: bash
         run: |
-          cp gradle/verification-metadata.xml "$RUNNER_TEMP/verification-metadata.xml"
-          git fetch origin main
-          git checkout -B verification-metadata-commit origin/main
-          mkdir -p gradle
-          cp "$RUNNER_TEMP/verification-metadata.xml" gradle/verification-metadata.xml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add gradle/verification-metadata.xml
-          git commit -m "build: add Gradle dependency verification metadata"
-          git push origin HEAD:main
+          test -f gradle/wrapper/gradle-wrapper.properties
+          grep -q '^distributionSha256Sum=' gradle/wrapper/gradle-wrapper.properties
+          test -f gradle/verification-metadata.xml
+          echo "497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7  gradle/wrapper/gradle-wrapper.jar" | sha256sum -c -
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest
+      - name: Assemble debug
+        run: ./gradlew :app:assembleDebug
