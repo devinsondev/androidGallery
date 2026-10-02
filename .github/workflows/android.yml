@@ -95,14 +95,18 @@ jobs:
             throw "Gradle wrapper JAR checksum mismatch"
           }
 
-      - name: Verify local BAT property matching (Windows)
+      - name: Verify local BAT property parsing (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
           set "EXPECTED_DISTRIBUTION_URL=https\://services.gradle.org/distributions/gradle-9.5.0-bin.zip"
           set "EXPECTED_DISTRIBUTION_SHA256=553c78f50dafcd54d65b9a444649057857469edf836431389695608536d6b746"
-          findstr /L /X /C:"distributionUrl=%EXPECTED_DISTRIBUTION_URL%" gradle\wrapper\gradle-wrapper.properties
-          findstr /L /X /C:"distributionSha256Sum=%EXPECTED_DISTRIBUTION_SHA256%" gradle\wrapper\gradle-wrapper.properties
+          set "ACTUAL_DISTRIBUTION_URL="
+          set "ACTUAL_DISTRIBUTION_SHA256="
+          for /f "usebackq tokens=1,* delims==" %%A in ("gradle\wrapper\gradle-wrapper.properties") do @if "%%A"=="distributionUrl" set "ACTUAL_DISTRIBUTION_URL=%%B"
+          for /f "usebackq tokens=1,* delims==" %%A in ("gradle\wrapper\gradle-wrapper.properties") do @if "%%A"=="distributionSha256Sum" set "ACTUAL_DISTRIBUTION_SHA256=%%B"
+          if not "%ACTUAL_DISTRIBUTION_URL%"=="%EXPECTED_DISTRIBUTION_URL%" exit /b 1
+          if /I not "%ACTUAL_DISTRIBUTION_SHA256%"=="%EXPECTED_DISTRIBUTION_SHA256%" exit /b 1
 
       - name: Unit tests (Linux)
         if: runner.os == 'Linux'
