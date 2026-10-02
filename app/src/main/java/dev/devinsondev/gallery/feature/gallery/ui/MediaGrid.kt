@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
@@ -47,6 +48,7 @@ import java.time.format.FormatStyle
 @Composable
 fun MediaGrid(
     items: List<GalleryMedia>,
+    gridState: LazyGridState,
     thumbnailLoader: ThumbnailLoader,
     onOpen: (GalleryMedia) -> Unit,
     contentPadding: PaddingValues,
@@ -64,6 +66,7 @@ fun MediaGrid(
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 108.dp),
+        state = gridState,
         contentPadding = contentPadding,
     ) {
         sections.forEach { section ->

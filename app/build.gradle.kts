@@ -26,6 +26,12 @@ android {
                 "proguard-rules.pro",
             )
         }
+
+        create("localRelease") {
+            initWith(getByName("release"))
+            isDebuggable = false
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
 
     buildFeatures {

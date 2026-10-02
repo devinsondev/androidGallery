@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +26,7 @@ import dev.devinsondev.gallery.feature.gallery.domain.GalleryMedia
 @Composable
 fun GalleryScreen(
     state: GalleryUiState,
+    gridState: LazyGridState,
     thumbnailLoader: ThumbnailLoader,
     onRequestMediaAccess: () -> Unit,
     onRefresh: () -> Unit,
@@ -76,6 +78,7 @@ fun GalleryScreen(
                     } else {
                         MediaGrid(
                             items = content.items,
+                            gridState = gridState,
                             thumbnailLoader = thumbnailLoader,
                             onOpen = onOpen,
                             contentPadding = PaddingValues(bottom = 16.dp),

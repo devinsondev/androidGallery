@@ -1,6 +1,7 @@
 package dev.devinsondev.gallery.feature.gallery.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.devinsondev.gallery.core.media.SafeImageDecoder
@@ -16,6 +17,7 @@ fun GalleryRoute(
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
     val selected = state.selectedMedia
+    val gridState = rememberLazyGridState()
 
     BackHandler(enabled = selected != null) {
         viewModel.closeViewer()
@@ -30,6 +32,7 @@ fun GalleryRoute(
     } else {
         GalleryScreen(
             state = state,
+            gridState = gridState,
             thumbnailLoader = thumbnailLoader,
             onRequestMediaAccess = onRequestMediaAccess,
             onRefresh = viewModel::refresh,
