@@ -67,61 +67,34 @@ jobs:
           grep -Fxq "distributionSha256Sum=$EXPECTED_GRADLE_SHA256" gradle/wrapper/gradle-wrapper.properties
           echo "$EXPECTED_WRAPPER_JAR_SHA256  gradle/wrapper/gradle-wrapper.jar" | sha256sum -c -
 
-      - name: Build security preflight (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $required = @(
-            "gradlew",
-            "gradlew.bat",
-            "gradle\wrapper\gradle-wrapper.jar",
-            "gradle\wrapper\gradle-wrapper.properties",
-            "gradle\verification-metadata.xml"
-          )
-          foreach ($path in $required) {
-            if (-not (Test-Path $path)) {
-              throw "Missing required build-security file: $path"
-            }
-          }
-          $props = Get-Content "gradle\wrapper\gradle-wrapper.properties"
-          if ($props -notcontains "distributionUrl=$env:EXPECTED_GRADLE_URL") {
-            throw "Unexpected Gradle distributionUrl"
-          }
-          if ($props -notcontains "distributionSha256Sum=$env:EXPECTED_GRADLE_SHA256") {
-            throw "Unexpected Gradle distributionSha256Sum"
-          }
-          $actual = (Get-FileHash "gradle\wrapper\gradle-wrapper.jar" -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($actual -ne $env:EXPECTED_WRAPPER_JAR_SHA256) {
-            throw "Gradle wrapper JAR checksum mismatch"
-          }
-
-      - name: Verify local BAT property parsing (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-          set "EXPECTED_DISTRIBUTION_URL=https\://services.gradle.org/distributions/gradle-9.5.0-bin.zip"
-          set "EXPECTED_DISTRIBUTION_SHA256=553c78f50dafcd54d65b9a444649057857469edf836431389695608536d6b746"
-          set "ACTUAL_DISTRIBUTION_URL="
-          set "ACTUAL_DISTRIBUTION_SHA256="
-          for /f "usebackq tokens=1,* delims==" %%A in ("gradle\wrapper\gradle-wrapper.properties") do @if "%%A"=="distributionUrl" set "ACTUAL_DISTRIBUTION_URL=%%B"
-          for /f "usebackq tokens=1,* delims==" %%A in ("gradle\wrapper\gradle-wrapper.properties") do @if "%%A"=="distributionSha256Sum" set "ACTUAL_DISTRIBUTION_SHA256=%%B"
-          if not "%ACTUAL_DISTRIBUTION_URL%"=="%EXPECTED_DISTRIBUTION_URL%" exit /b 1
-          if /I not "%ACTUAL_DISTRIBUTION_SHA256%"=="%EXPECTED_DISTRIBUTION_SHA256%" exit /b 1
-
       - name: Unit tests (Linux)
         if: runner.os == 'Linux'
         run: ./gradlew --dependency-verification strict :app:testDebugUnitTest
-
-      - name: Unit tests (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: .\gradlew.bat --dependency-verification strict :app:testDebugUnitTest
 
       - name: Assemble debug (Linux)
         if: runner.os == 'Linux'
         run: ./gradlew --dependency-verification strict :app:assembleDebug
 
-      - name: Assemble debug (Windows)
+      - name: Prepare canonical Windows workstation paths
         if: runner.os == 'Windows'
         shell: pwsh
-        run: .\gradlew.bat --dependency-verification strict :app:assembleDebug
+        run: |
+          New-Item -ItemType Directory -Force -Path "D:\TOOLS\andrstdio" | Out-Null
+          $jbr = "D:\TOOLS\andrstdio\jbr"
+          if (Test-Path $jbr) {
+            Remove-Item $jbr -Recurse -Force
+          }
+          New-Item -ItemType Junction -Path $jbr -Target $env:JAVA_HOME | Out-Null
+
+          $sdkParent = Join-Path $env:LOCALAPPDATA "Android"
+          $sdk = Join-Path $sdkParent "Sdk"
+          New-Item -ItemType Directory -Force -Path $sdkParent | Out-Null
+          if (Test-Path $sdk) {
+            Remove-Item $sdk -Recurse -Force
+          }
+          New-Item -ItemType Junction -Path $sdk -Target $env:ANDROID_HOME | Out-Null
+
+      - name: Run canonical Windows build helper
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: build-debug.bat

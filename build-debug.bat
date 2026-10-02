@@ -16,6 +16,7 @@ set "WRAPPER_BAT=gradlew.bat"
 set "WRAPPER_JAR=gradle\wrapper\gradle-wrapper.jar"
 set "WRAPPER_PROPS=gradle\wrapper\gradle-wrapper.properties"
 set "VERIFY_META=gradle\verification-metadata.xml"
+set "CERTUTIL=%SystemRoot%\System32\certutil.exe"
 
 echo.
 echo [PRECHECK] Secure Android build preflight...
@@ -71,10 +72,16 @@ if /I not "%ACTUAL_DISTRIBUTION_SHA256%"=="%EXPECTED_DISTRIBUTION_SHA256%" (
     exit /b 1
 )
 
-set "ACTUAL_WRAPPER_JAR_SHA256="
-for /f "delims=" %%H in ('powershell -NoProfile -Command "(Get-FileHash -LiteralPath '%WRAPPER_JAR%' -Algorithm SHA256).Hash.ToLowerInvariant()"') do (
-    set "ACTUAL_WRAPPER_JAR_SHA256=%%H"
+if not exist "%CERTUTIL%" (
+    echo ERROR: Windows certutil.exe not found at %CERTUTIL%.
+    exit /b 1
 )
+
+set "ACTUAL_WRAPPER_JAR_SHA256="
+for /f "skip=1 delims=" %%H in ('%SystemRoot%\System32\certutil.exe -hashfile "%WRAPPER_JAR%" SHA256 2^>nul') do (
+    if not defined ACTUAL_WRAPPER_JAR_SHA256 set "ACTUAL_WRAPPER_JAR_SHA256=%%H"
+)
+set "ACTUAL_WRAPPER_JAR_SHA256=%ACTUAL_WRAPPER_JAR_SHA256: =%"
 
 if not defined ACTUAL_WRAPPER_JAR_SHA256 (
     echo ERROR: Could not calculate Gradle wrapper JAR SHA-256.
