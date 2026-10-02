@@ -1,1 +1,2 @@
 Temporary trigger for Windows preflight literal comparison verification.
+Retry after adding exact BAT findstr checks to CI.
