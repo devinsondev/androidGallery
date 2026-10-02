@@ -40,13 +40,13 @@ if not exist "%VERIFY_META%" (
     exit /b 1
 )
 
-findstr /X /C:"distributionUrl=%EXPECTED_DISTRIBUTION_URL%" "%WRAPPER_PROPS%" >nul
+findstr /L /X /C:"distributionUrl=%EXPECTED_DISTRIBUTION_URL%" "%WRAPPER_PROPS%" >nul
 if errorlevel 1 (
     echo ERROR: Gradle distributionUrl does not match the trusted expected URL.
     exit /b 1
 )
 
-findstr /X /C:"distributionSha256Sum=%EXPECTED_DISTRIBUTION_SHA256%" "%WRAPPER_PROPS%" >nul
+findstr /L /X /C:"distributionSha256Sum=%EXPECTED_DISTRIBUTION_SHA256%" "%WRAPPER_PROPS%" >nul
 if errorlevel 1 (
     echo ERROR: Gradle distributionSha256Sum does not match the trusted expected SHA-256.
     exit /b 1
